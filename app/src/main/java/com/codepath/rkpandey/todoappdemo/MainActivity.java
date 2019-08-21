@@ -11,6 +11,11 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import org.apache.commons.io.FileUtils;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,10 +43,7 @@ public class MainActivity extends AppCompatActivity {
         etTodo = findViewById(R.id.etTodo);
         rvItems = findViewById(R.id.rvItems);
 
-        items = new ArrayList<>();
-        items.add("Hello");
-        items.add("World");
-
+        readItems();
         rvItems.setLayoutManager(new LinearLayoutManager(this));
         ItemsAdapter.OnLongClickListener onLongClickListener = new ItemsAdapter.OnLongClickListener() {
             @Override
@@ -49,6 +51,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.i("MainActivity", "Long press at position " + position);
                 items.remove(position);
                 adapter.notifyItemRemoved(position);
+                writeItems();
             }
         };
         adapter = new ItemsAdapter(this, items, onLongClickListener);
@@ -59,13 +62,38 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 String itemText = etTodo.getText().toString();
+                if (itemText.isEmpty()) {
+                    Toast.makeText(MainActivity.this, "Cannot add an empty item", Toast.LENGTH_SHORT).show();
+                    return;
+                }
                 etTodo.setText("");
                 // Add the new item to the list
                 items.add(itemText);
                 adapter.notifyItemInserted(items.size() - 1);
                 Toast.makeText(MainActivity.this, "Added item", Toast.LENGTH_SHORT).show();
-
+                writeItems();
             }
         });
+    }
+
+    private File getDataFile() {
+        return new File(getFilesDir(), "data.txt");
+    }
+
+    private void readItems() {
+        try {
+            items = new ArrayList<>(FileUtils.readLines(getDataFile(), Charset.defaultCharset()));
+        } catch (IOException e) {
+            Log.e("MainActivity", "Error reading items", e);
+            items = new ArrayList<>();
+        }
+    }
+
+    private void writeItems() {
+        try {
+            FileUtils.writeLines(getDataFile(), items);
+        } catch (IOException e) {
+            Log.e("MainActivity", "Error writing file", e);
+        }
     }
 }
