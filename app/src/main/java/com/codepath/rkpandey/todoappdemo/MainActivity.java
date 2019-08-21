@@ -5,6 +5,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -20,6 +21,7 @@ public class MainActivity extends AppCompatActivity {
     RecyclerView rvItems;
 
     List<String> items;
+    ItemsAdapter adapter;
 
     // Add RecyclerView AndroidX library to the Gradle build file DONE
     //Define a model class to use as the data source DONE
@@ -41,8 +43,17 @@ public class MainActivity extends AppCompatActivity {
         items.add("World");
 
         rvItems.setLayoutManager(new LinearLayoutManager(this));
-        ItemsAdapter itemsAdapter = new ItemsAdapter(this, items);
-        rvItems.setAdapter(itemsAdapter);
+        ItemsAdapter.OnLongClickListener onLongClickListener = new ItemsAdapter.OnLongClickListener() {
+            @Override
+            public void onItemLongClicked(int position) {
+                Log.i("MainActivity", "Long press at position " + position);
+                items.remove(position);
+                adapter.notifyItemRemoved(position);
+            }
+        };
+        adapter = new ItemsAdapter(this, items, onLongClickListener);
+        rvItems.setAdapter(adapter);
+
 
         btnAdd.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -51,6 +62,7 @@ public class MainActivity extends AppCompatActivity {
                 etTodo.setText("");
                 // Add the new item to the list
                 items.add(itemText);
+                adapter.notifyItemInserted(items.size() - 1);
                 Toast.makeText(MainActivity.this, "Added item", Toast.LENGTH_SHORT).show();
 
             }
