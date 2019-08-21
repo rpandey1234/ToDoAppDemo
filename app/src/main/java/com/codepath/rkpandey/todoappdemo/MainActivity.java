@@ -54,7 +54,14 @@ public class MainActivity extends AppCompatActivity {
                 writeItems();
             }
         };
-        adapter = new ItemsAdapter(this, items, onLongClickListener);
+        ItemsAdapter.OnClickListener onClickListener = new ItemsAdapter.OnClickListener() {
+            @Override
+            public void onClickListener(int position) {
+                Log.d("MainActivity", "Singe press at position " + position);
+            }
+        };
+
+        adapter = new ItemsAdapter(this, items, onLongClickListener, onClickListener);
         rvItems.setAdapter(adapter);
 
 
