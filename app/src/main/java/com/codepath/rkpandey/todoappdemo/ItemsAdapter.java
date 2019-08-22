@@ -11,6 +11,10 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
 
+/**
+ * Adapter knows how to display every data entry of the list in each row of the RecyclerView.
+ * It knows they type of the view, its view layout and which data goes where in the view.
+ */
 public class ItemsAdapter extends RecyclerView.Adapter<ItemsAdapter.ViewHolder> {
 
     Context context;
@@ -53,6 +57,9 @@ public class ItemsAdapter extends RecyclerView.Adapter<ItemsAdapter.ViewHolder> 
         return items.size();
     }
 
+    /**
+     * Class-container to provide easy access to views that represent each row of the list.
+     */
     class ViewHolder extends RecyclerView.ViewHolder {
 
         TextView tvItem;
@@ -62,8 +69,16 @@ public class ItemsAdapter extends RecyclerView.Adapter<ItemsAdapter.ViewHolder> 
             tvItem = itemView.findViewById(android.R.id.text1);
         }
 
+        /**
+         * "Binds" data to TextView, effectively updates views with given values
+         * that represent data for each individual row.
+         *
+         * @param todoText Text to be displayed for this to-do item.
+         */
         public void bind(String todoText) {
             tvItem.setText(todoText);
+
+            // assign listeners to provide callbacks for user clicks/taps/press events
             tvItem.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View v) {
