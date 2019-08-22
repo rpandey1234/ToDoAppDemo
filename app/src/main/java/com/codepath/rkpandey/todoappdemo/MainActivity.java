@@ -26,8 +26,8 @@ public class MainActivity extends AppCompatActivity {
     // a numeric code to identify the edit activity
     public static final int EDIT_REQUEST_CODE = 20;
     // key used for passing data between activities
-    public static final String ITEM_TEXT = "itemText";
-    public static final String ITEM_POSITION = "itemPosition";
+    public static final String KEY_ITEM_TEXT = "itemText";
+    public static final String KEY_ITEM_POSITION = "itemPosition";
 
     Button btnAdd;
     EditText etTodo;
@@ -51,7 +51,7 @@ public class MainActivity extends AppCompatActivity {
         etTodo = findViewById(R.id.etTodo);
         rvItems = findViewById(R.id.rvItems);
 
-        readItems();
+        loadItems();
         rvItems.setLayoutManager(new LinearLayoutManager(this));
         ItemsAdapter.OnLongClickListener onLongClickListener = new ItemsAdapter.OnLongClickListener() {
             @Override
@@ -59,7 +59,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.i("MainActivity", "Long press at position " + position);
                 items.remove(position);
                 adapter.notifyItemRemoved(position);
-                writeItems();
+                saveItems();
             }
         };
         ItemsAdapter.OnClickListener onClickListener = new ItemsAdapter.OnClickListener() {
@@ -68,9 +68,9 @@ public class MainActivity extends AppCompatActivity {
                 Log.d("MainActivity", "Singe press at position " + position);
                 // create the new activity
                 Intent intent = new Intent(MainActivity.this, EditItemActivity.class);
-                // pass the data being edited
-                intent.putExtra(ITEM_POSITION, position);
-                intent.putExtra(ITEM_TEXT, items.get(position));
+                // pass the data being edited as key-value pair
+                intent.putExtra(KEY_ITEM_POSITION, position);
+                intent.putExtra(KEY_ITEM_TEXT, items.get(position));
                 // display the activity
                 startActivityForResult(intent, EDIT_REQUEST_CODE);
             }
@@ -78,7 +78,6 @@ public class MainActivity extends AppCompatActivity {
 
         adapter = new ItemsAdapter(this, items, onLongClickListener, onClickListener);
         rvItems.setAdapter(adapter);
-
 
         btnAdd.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -93,7 +92,7 @@ public class MainActivity extends AppCompatActivity {
                 items.add(itemText);
                 adapter.notifyItemInserted(items.size() - 1);
                 Toast.makeText(MainActivity.this, "Added item", Toast.LENGTH_SHORT).show();
-                writeItems();
+                saveItems();
             }
         });
     }
@@ -102,16 +101,16 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         // if the edit activity completed ok
         if (resultCode == RESULT_OK && requestCode == EDIT_REQUEST_CODE) {
-            // Update the list with the updated item text
-            String itemText = data.getStringExtra(ITEM_TEXT);
-            // extract original position of the edited item
-            int position = data.getIntExtra(ITEM_POSITION, 0);
+            // Retrieve updated item text value using the key for item text
+            String itemText = data.getStringExtra(KEY_ITEM_TEXT);
+            // extract original position of the edited item by requesting value of position key
+            int position = data.getIntExtra(KEY_ITEM_POSITION, 0);
             // update the model with the new item text at the edited position
             items.set(position, itemText);
             // notify the adapter
             adapter.notifyItemChanged(position);
             // persist the changes
-            writeItems();
+            saveItems();
             // notify the user that the operation completed successfully
             Toast.makeText(this, "Item updated successfully", Toast.LENGTH_SHORT).show();
         } else {
@@ -123,7 +122,10 @@ public class MainActivity extends AppCompatActivity {
         return new File(getFilesDir(), "data.txt");
     }
 
-    private void readItems() {
+    /**
+     * This function loads items by reading every line in a local data file.
+     */
+    private void loadItems() {
         try {
             items = new ArrayList<>(FileUtils.readLines(getDataFile(), Charset.defaultCharset()));
         } catch (IOException e) {
@@ -132,7 +134,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void writeItems() {
+    /**
+     * This function saves items by writing into a local data file.
+     */
+    private void saveItems() {
         try {
             FileUtils.writeLines(getDataFile(), items);
         } catch (IOException e) {
